@@ -21,7 +21,7 @@ namespace StoreApp.Business.services
         }
         public dynamic GetFilteredOrdersBasedOnExclusion(CustomDto mobileDto)
         {
-            CustomEntity mobile = _mapper.Map<CustomDto>(mobileDto);
+            CustomEntity mobile = _mapper.Map<CustomEntity>(mobileDto);
             dynamic response = _storeRepository.GetFilteredOrdersBasedOnExclusion(mobile);
             return response;
         }

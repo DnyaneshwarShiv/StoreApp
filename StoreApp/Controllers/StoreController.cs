@@ -15,9 +15,9 @@ namespace StoreApp.Controllers
         }
 
         [HttpGet]
-        public async IEnumerable<UserMobileOrderDto> GetAllFilteredOrders(string type,string filterJson)
+        public  IEnumerable<UserMobileOrderDto> GetAllFilteredOrders(string type,string filterJson)
         {
-            var result=GetFilteredData(type,filterJson);
+            var result= GetFilteredData(type,filterJson);
             return result;
         }
        private IEnumerable<UserMobileOrderDto> GetFilteredData(string type,string filterJson)

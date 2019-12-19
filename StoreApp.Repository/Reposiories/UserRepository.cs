@@ -22,15 +22,17 @@ namespace StoreApp.Repository.Reposiories
         }
         public Users Authenticate(string userName,string password)
         {
-           
+            Users user = null;
             if (_clientDBContext.Users.Any(w => w.Name.Equals(userName, StringComparison.CurrentCultureIgnoreCase)
                         && w.Password.Equals(password,StringComparison.CurrentCultureIgnoreCase) ))
             {
-               return (from client in _clientDBContext.Client
+                user=(from client in _clientDBContext.Client
                 join users in _clientDBContext.Users on client.Id equals users.Id
                 select users).FirstOrDefault();
             }
-            return null;
+            if(user!=null)
+            _memoryCache.Set("ClientId", user.ClientId);
+            return user;
         }
     }
 }

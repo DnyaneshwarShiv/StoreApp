@@ -9,7 +9,7 @@ namespace StoreApp.Repository.CustomEntities
 {
     public static class FilterExtension
     {
-        public static Expression<Func<TEntity, bool>>  BuildPredicate<TEntity>(this Object obj) where TEntity : class
+        public static Expression<Func<TEntity, bool>>  BuildPredicate<TEntity>(this IQueryable<object> collection, TEntity obj) where TEntity : class
         {
             var props = typeof(TEntity).GetRuntimeProperties().ToArray();
             props = props.Where(c => !string.IsNullOrWhiteSpace(c.Name)).Select(prop => prop).ToArray();
@@ -26,6 +26,7 @@ namespace StoreApp.Repository.CustomEntities
             }
             return predicate;
         }
+      
     }
 
     public static class PredicateBuilder
