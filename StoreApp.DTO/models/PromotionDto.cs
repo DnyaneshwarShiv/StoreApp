@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace StoreApp.Domain.ExtraEdgeStoreDB
+namespace StoreApp.DTO.models
 {
-    public partial class UserMobileOrder
+    public class PromotionDto
     {
         public long Id { get; set; }
-        public long? UserOrderId { get; set; }
-        public long MobileId { get; set; }
-        public DateTime? OrderDate { get; set; }
+        public string PromoCodeName { get; set; }
+        public string PromoCodeType { get; set; }
+        public int? DiscountPercentage { get; set; }
         public string CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public string ModifiedBy { get; set; }
         public string ModifiedOn { get; set; }
         public bool? IsActive { get; set; }
-        public long PaymentId { get; set; }
     }
 }

@@ -84,7 +84,7 @@ namespace StoreApp.Domain.ExtraEdgeStoreDB
 
                 entity.Property(e => e.CreatedOn).HasColumnType("datetime");
 
-                entity.Property(e => e.MobileId).HasMaxLength(100);
+                entity.Property(e => e.MobileId);
 
                 entity.Property(e => e.ModifiedBy).HasMaxLength(50);
 

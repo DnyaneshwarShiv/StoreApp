@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace StoreApp.Domain.ExtraEdgeStoreDB
+namespace StoreApp.DTO.models
 {
-    public partial class UserMobileOrder
+    public class UserMobileOrderDto
     {
         public long Id { get; set; }
         public long? UserOrderId { get; set; }
-        public long MobileId { get; set; }
+        public string MobileId { get; set; }
         public DateTime? OrderDate { get; set; }
         public string CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }

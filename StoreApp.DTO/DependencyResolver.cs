@@ -17,6 +17,7 @@ namespace StoreApp.DTO
             services.AddDbContext<ExtraEdgeStoreDBContext>();
             services.AddDbContext<ClientDBContext>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IStoreRepository, StoreReposiotry>();
         }
     }
 }

@@ -51,6 +51,6 @@ namespace StoreApp.Business.services
             UsersDto userDto = _mapper.Map<UsersDto>(user);
             return userDto;
         }
-      
+
     }
 }

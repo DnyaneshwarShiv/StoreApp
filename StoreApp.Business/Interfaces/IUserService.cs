@@ -8,5 +8,6 @@ namespace StoreApp.Business.Interfaces
     public interface IUserService
     {
         UsersDto Authenticate(string userName, string password);
+       
     }
 }
