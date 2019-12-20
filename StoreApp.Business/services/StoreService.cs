@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using StoreApp.Business.Interfaces;
+using StoreApp.Domain.ClientDB;
 using StoreApp.Domain.ExtraEdgeStoreDB;
 using StoreApp.DTO.models;
 using StoreApp.Repository.CustomEntities;
@@ -33,19 +34,25 @@ namespace StoreApp.Business.services
             return response;
         }
 
-        public dynamic GetFilteredOrdersBasedOnPaymentMode(PaymentModeMasterDto mobileDto)
+        public dynamic GetFilteredOrdersBasedOnPaymentMode(PaymentModeMasterDto paymentDto)
         {
-            throw new NotImplementedException();
+            PaymentModeMaster paymentModeMaster = _mapper.Map<PaymentModeMaster>(paymentDto);
+            dynamic response = _storeRepository.GetFilteredOrdersBasedOnPaymentMode(paymentModeMaster);
+            return response;
         }
 
-        public dynamic GetFilteredOrdersBasedOnUser(UsersDto mobileDto)
+        public dynamic GetFilteredOrdersBasedOnUser(UsersDto usersDto)
         {
-            throw new NotImplementedException();
+            Users users = _mapper.Map<Users>(usersDto);
+            dynamic response = _storeRepository.GetFilteredOrdersBasedOnUser(users);
+            return response;
         }
 
-        public dynamic GetFilteredOrdersBasedOnUserorder(UserOrdersDto mobileDto)
+        public dynamic GetFilteredOrdersBasedOnUserorder(UserOrdersDto userOrdersDto)
         {
-            throw new NotImplementedException();
+            UserOrder userOrders = _mapper.Map<UserOrder>(userOrdersDto);
+            dynamic response = _storeRepository.GetFilteredOrdersBasedOnUserorder(userOrders);
+            return response;
         }
     }
 }

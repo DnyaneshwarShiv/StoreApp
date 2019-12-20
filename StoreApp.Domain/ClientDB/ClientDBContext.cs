@@ -20,8 +20,9 @@ namespace StoreApp.Domain.ClientDB
         {
             if (!optionsBuilder.IsConfigured)
             {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=SILICUS543\\SQLEXPRESS2017;Database=ClientDB;Trusted_Connection=True;");
+                //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+                optionsBuilder.UseSqlServer("Server=DESKTOP-9411J58\\SQLEXPRESS;Database=ClientDB;Trusted_Connection=True;");
+                    //"Server=SILICUS543\\SQLEXPRESS2017;Database=ClientDB;Trusted_Connection=True;");
             }
         }
 

@@ -7,6 +7,7 @@ namespace StoreApp.Domain.ClientDB
     {
         public long Id { get; set; }
         public string StoreDbname { get; set; }
+        public string StoreConnectionString { get; set; }
         public string CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public string ModifiedBy { get; set; }
