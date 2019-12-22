@@ -17,7 +17,7 @@ namespace StoreApp.Repository.CustomEntities
 
         public static DbContextOptionsBuilder<T> Create(string connid)
         {
-            if (!string.IsNullOrEmpty(connid))
+                if (!string.IsNullOrEmpty(connid))
             {
                 var connStr = ConnectionStrings[connid];
                 var optionsBuilder = new DbContextOptionsBuilder<T>();

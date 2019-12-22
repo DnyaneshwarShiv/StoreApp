@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace StoreAPP.UnitTest
+namespace APS.UnitTest
 {
     [TestClass]
     public class UnitTest1

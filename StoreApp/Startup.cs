@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,9 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OData.Edm;
 using StoreApp.Business.Interfaces;
 using StoreApp.Business.services;
 using StoreApp.DTO;
+using StoreApp.DTO.models;
+using StoreApp.Repository.CustomEntities;
 using System.Text;
 
 namespace StoreApp
@@ -33,6 +38,7 @@ namespace StoreApp
             services.AddSingleton(mapper);
             DependencyResolver.RegisterDependency(services);
             byte[] key = Encoding.ASCII.GetBytes(Constant.secrete);
+            services.AddOData();
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -54,7 +60,20 @@ namespace StoreApp
             services.AddScoped<IStoreService, StoreService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
-
+        private static IEdmModel GetEdmModel()
+        {
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            builder.EntitySet<UserOrdersDto>("UserOrder");
+            builder.EntitySet<UserMobileOrderDto>("UserMobileOrder");
+            builder.EntitySet<MobileDto>("Mobile");
+            builder.EntitySet<UsersDto>("User");
+            builder.EntitySet<CustomEntity>("result");
+            builder.EntitySet<PaymentModeMasterDto>("PaymentModeMaster");
+            var function = builder.Function("GetReports");
+            function.Parameter<string>("type");
+            function.ReturnsCollectionFromEntitySet<CustomEntity>("Custom");
+            return builder.GetEdmModel();
+        }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
@@ -69,7 +88,15 @@ namespace StoreApp
             }
           
             app.UseHttpsRedirection();
-            app.UseMvc();
+
+            app.UseMvc(routeBuilder => {
+
+                routeBuilder.EnableDependencyInjection();
+
+                routeBuilder.Expand().Select().OrderBy().Filter();
+
+            });
+           
         }
     }
 }

@@ -5,6 +5,7 @@ using StoreApp.Domain.ExtraEdgeStoreDB;
 using StoreApp.Repository.interfaces;
 using System;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 
 namespace StoreApp.Repository.Reposiories
 {
@@ -23,8 +24,8 @@ namespace StoreApp.Repository.Reposiories
         public Users Authenticate(string userName,string password)
         {
             Users user = null;
-            if (_clientDBContext.Users.Any(w => w.Name.Equals(userName, StringComparison.CurrentCultureIgnoreCase)
-                        && w.Password.Equals(password,StringComparison.CurrentCultureIgnoreCase) ))
+            if (_clientDBContext.Users.Any("w => w.Name.Equals(@0, StringComparison.CurrentCultureIgnoreCase)" +
+                        "and w.Password.Equals(@1,StringComparison.CurrentCultureIgnoreCase) ", userName, password)) 
             {
                 user=(from client in _clientDBContext.Client
                 join users in _clientDBContext.Users on client.Id equals users.Id

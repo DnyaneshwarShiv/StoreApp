@@ -1,8 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Routing;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using StoreApp.Business.Interfaces;
 using StoreApp.DTO.models;
+using StoreApp.Repository.CustomEntities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace StoreApp.Controllers
 {
@@ -11,47 +17,62 @@ namespace StoreApp.Controllers
     public class StoreController : ControllerBase
     {
         private readonly IStoreService _storeService;
-        public StoreController(IStoreService storeService)
+        private readonly IMemoryCache _memoryCache;
+        public StoreController(IStoreService storeService,IMemoryCache memoryCache)
         {
             _storeService = storeService;
+            _memoryCache = memoryCache;
         }
-
+        
+        [EnableQuery(PageSize =10)]
         [HttpGet]
-        public  dynamic GetAllFilteredOrders(string type,string filterJson)
+        [ODataRoute("GetReports(type={type})")]
+        public  IActionResult GetAllFilteredOrders([FromODataUri]string type)
         {
-            var result= GetFilteredData(type,filterJson);
-            return result;
+            try
+            {
+                var clientId = _memoryCache.Get("ClientId");
+
+                if (clientId != null)
+                {
+                    var result = GetFilteredData(type, (long)clientId);
+                    return Ok( result);
+                }
+                return Unauthorized();
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
-       private dynamic GetFilteredData(string type,string filterJson)
+        #region private method
+        private dynamic GetFilteredData(string type,long clientId)
         {
-            dynamic response=null;
+            IQueryable<CustomEntity> response = null;
             switch (type)
             {
                 case "Mobile":
-                   MobileDto mobile = JsonConvert.DeserializeObject<MobileDto>(filterJson);
-                   response= _storeService.GetFilteredOrdersBasedOnMobile(mobile);
+                   
+                    response = _storeService.GetFilteredOrdersBasedOnMobile(clientId);
                     break;
                 case "User":
-                    UsersDto users = JsonConvert.DeserializeObject<UsersDto>(filterJson);
-                    _storeService.GetFilteredOrdersBasedOnUser(users);
+                    response=_storeService.GetFilteredOrdersBasedOnUser(clientId);
                     break;
                 case "Userorder":
-                    UserOrdersDto userOrders = JsonConvert.DeserializeObject<UserOrdersDto>(filterJson);
-                    response=_storeService.GetFilteredOrdersBasedOnUserorder(userOrders);
+                    response = _storeService.GetFilteredOrdersBasedOnUserorder(clientId);
                     break;
                 case "PaymentMode":
-                    PaymentModeMasterDto paymentModeMasterDto = JsonConvert.DeserializeObject<PaymentModeMasterDto>(filterJson);
-                   response= _storeService.GetFilteredOrdersBasedOnPaymentMode(paymentModeMasterDto);
+                    response = _storeService.GetFilteredOrdersBasedOnPaymentMode(clientId);
                     break;
-                 case "exclusion":
+                case "exclusion":
 
                     break;
                 default:
                     return null;
-                    
+
             }
             return response;
         }
-
+        #endregion
     }
 }

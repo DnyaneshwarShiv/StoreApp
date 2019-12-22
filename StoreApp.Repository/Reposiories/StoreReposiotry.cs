@@ -1,14 +1,13 @@
-﻿using StoreApp.Domain.ClientDB;
+﻿using Microsoft.Extensions.Caching.Memory;
+using StoreApp.Domain.ClientDB;
 using StoreApp.Domain.ExtraEdgeStoreDB;
 using StoreApp.Repository.CustomEntities;
 using StoreApp.Repository.interfaces;
 using System;
-using System.Linq;
-using System.Linq.Expressions;
-using StoreApp.Repository.CustomEntities;
-using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using System.Reflection;
 
 namespace StoreApp.Repository.Reposiories
 {
@@ -16,40 +15,36 @@ namespace StoreApp.Repository.Reposiories
     {
         private readonly ExtraEdgeStoreDBContext _extraEdgeStoreDBContext;
         private readonly ClientDBContext _clientDBContext;
-        private readonly IMemoryCache _memoryCache;
-        public StoreReposiotry(ExtraEdgeStoreDBContext extraEdgeStoreDBContext,ClientDBContext clientDBContext,IMemoryCache memoryCache)
+        public StoreReposiotry(ExtraEdgeStoreDBContext extraEdgeStoreDBContext,ClientDBContext clientDBContext)
         {
             _extraEdgeStoreDBContext = extraEdgeStoreDBContext;
             _clientDBContext = clientDBContext;
-            _memoryCache = memoryCache;
         }
-        public dynamic GetFilteredOrdersBasedOnExclusion(CustomEntity customEntity)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnExclusion(long clientId)
         {
             throw new NotImplementedException();
         }
 
-        public dynamic GetFilteredOrdersBasedOnMobile(Mobile mobileDto)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnMobile(long clientId)
         {
-            var clientId = _memoryCache.Get("ClientId");
-            if (clientId != null)
-            {
-                var dbContext = GetDBContextBasedOnClientId((long)clientId);
+            
+                var dbContext = GetDBContextBasedOnClientId(Convert.ToInt64(clientId));
                 var mobileOrders = (from order in _extraEdgeStoreDBContext.UserMobileOrder
                                     join
                                     mobile in _extraEdgeStoreDBContext.Mobile
                                         on order.MobileId equals mobile.Id
                                     join userOrder in _extraEdgeStoreDBContext.UserOrder
                                         on order.UserOrderId equals userOrder.Id
-                                    select order);
+                                    
+                                    select new CustomEntity { UserMobileOrder = order, Mobile = mobile, UserOrder = userOrder });
 
-                dynamic response = mobileOrders.BuildPredicate<Mobile>(mobileDto);
-                return response;
-            }
-            return null;
+                //dynamic response = mobileOrders.Where("mobile.Brand ==@0 and mobile.Price ==@1", mobileData.Brand, mobileData.Price);
+               // dynamic response = mobileOrders.ToList();
+                return mobileOrders;
         }
 
         
-        public dynamic GetFilteredOrdersBasedOnPaymentMode(PaymentModeMaster paymentMode)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnPaymentMode(long clientId)
         {
             var paymentBasedOrder = (from order in _extraEdgeStoreDBContext.UserMobileOrder
                                 join
@@ -57,26 +52,31 @@ namespace StoreApp.Repository.Reposiories
                                     on order.PaymentId equals payment.Id
                                 join userOrder in _extraEdgeStoreDBContext.UserOrder
                                     on order.UserOrderId equals userOrder.Id
-                                select order);
+                                select new CustomEntity { PaymentModeMaster=payment, UserMobileOrder = order, UserOrder = userOrder });
 
-            dynamic response = paymentBasedOrder.BuildPredicate<PaymentModeMaster>(paymentMode);
-            return response;
+            
+                //= paymentBasedOrder.BuildPredicate<PaymentModeMaster>(paymentMode);
+            return paymentBasedOrder;
         }
 
-        public dynamic GetFilteredOrdersBasedOnUser(Users users)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnUser(long clientId)
         {
-            var userOrders = (from order in _extraEdgeStoreDBContext.UserOrder
-                                join  clietUser in  _clientDBContext.Users
-                                    on order.UserId equals clietUser.Id
-                                     select order);
+            var userOrderList = _extraEdgeStoreDBContext.UserOrder;
+            var users = _clientDBContext.Users.Where(w=>w.ClientId==clientId).ToList();
+            var userOrders = (from userOrder in userOrderList
+                                join  user in  users
+                                    on userOrder.UserId equals user.Id
+                                     select new CustomEntity {  Users = user, UserOrder = userOrder });
 
-            dynamic response = userOrders.BuildPredicate<Users>(users);
-            return response;
+            
+                //= userOrders.BuildPredicate<Users>(users);
+            return userOrders;
         }
 
-        public dynamic GetFilteredOrdersBasedOnUserorder(UserOrder userOrder)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnUserorder(long clientId)
         {
-            throw new NotImplementedException();
+            var userOrders = (from order in _extraEdgeStoreDBContext.UserOrder select new CustomEntity{UserOrder=order });
+            return userOrders;
         }
 
 
@@ -88,7 +88,7 @@ namespace StoreApp.Repository.Reposiories
 
             connectionStrings.Add(client.StoreDbname, client.StoreConnectionString);
             DbContextFactory<ExtraEdgeStoreDBContext>.SetConnectionString(connectionStrings);
-            return new ExtraEdgeStoreDBContext(DbContextFactory<ExtraEdgeStoreDBContext>.Create(connectionStrings[client.StoreDbname]).Options);
+            return new ExtraEdgeStoreDBContext(DbContextFactory<ExtraEdgeStoreDBContext>.Create(client.StoreDbname).Options);
 
         }
 

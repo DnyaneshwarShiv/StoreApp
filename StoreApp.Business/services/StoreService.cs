@@ -6,6 +6,7 @@ using StoreApp.DTO.models;
 using StoreApp.Repository.CustomEntities;
 using StoreApp.Repository.interfaces;
 using System;
+using System.Linq;
 
 namespace StoreApp.Business.services
 {
@@ -20,38 +21,34 @@ namespace StoreApp.Business.services
             _mapper = mapper;
 
         }
-        public dynamic GetFilteredOrdersBasedOnExclusion(CustomDto mobileDto)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnExclusion(long clientId)
         {
-            CustomEntity mobile = _mapper.Map<CustomEntity>(mobileDto);
-            dynamic response = _storeRepository.GetFilteredOrdersBasedOnExclusion(mobile);
+            IQueryable<CustomEntity> response = _storeRepository.GetFilteredOrdersBasedOnExclusion(clientId);
             return response;
         }
 
-        public dynamic GetFilteredOrdersBasedOnMobile(MobileDto mobileDto)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnMobile(long clientId)
         {
-            Mobile mobile = _mapper.Map<Mobile>(mobileDto);
-            dynamic response = _storeRepository.GetFilteredOrdersBasedOnMobile(mobile);
+           IQueryable<CustomEntity> response = _storeRepository.GetFilteredOrdersBasedOnMobile( clientId);
+
             return response;
         }
 
-        public dynamic GetFilteredOrdersBasedOnPaymentMode(PaymentModeMasterDto paymentDto)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnPaymentMode(long clientId)
         {
-            PaymentModeMaster paymentModeMaster = _mapper.Map<PaymentModeMaster>(paymentDto);
-            dynamic response = _storeRepository.GetFilteredOrdersBasedOnPaymentMode(paymentModeMaster);
+            IQueryable<CustomEntity> response = _storeRepository.GetFilteredOrdersBasedOnPaymentMode(clientId);
             return response;
         }
 
-        public dynamic GetFilteredOrdersBasedOnUser(UsersDto usersDto)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnUser(long clientId)
         {
-            Users users = _mapper.Map<Users>(usersDto);
-            dynamic response = _storeRepository.GetFilteredOrdersBasedOnUser(users);
+            IQueryable<CustomEntity> response = _storeRepository.GetFilteredOrdersBasedOnUser(clientId);
             return response;
         }
 
-        public dynamic GetFilteredOrdersBasedOnUserorder(UserOrdersDto userOrdersDto)
+        public IQueryable<CustomEntity> GetFilteredOrdersBasedOnUserorder(long clientId)
         {
-            UserOrder userOrders = _mapper.Map<UserOrder>(userOrdersDto);
-            dynamic response = _storeRepository.GetFilteredOrdersBasedOnUserorder(userOrders);
+            IQueryable<CustomEntity> response = _storeRepository.GetFilteredOrdersBasedOnUserorder(clientId);
             return response;
         }
     }
