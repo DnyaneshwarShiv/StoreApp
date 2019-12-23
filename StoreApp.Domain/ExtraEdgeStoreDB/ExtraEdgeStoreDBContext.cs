@@ -11,6 +11,7 @@ namespace StoreApp.Domain.ExtraEdgeStoreDB
         public ExtraEdgeStoreDBContext(DbContextOptions<ExtraEdgeStoreDBContext> options)
             : base(options)
         {
+            
         }
 
         public virtual DbSet<Mobile> Mobile { get; set; }
@@ -25,8 +26,9 @@ namespace StoreApp.Domain.ExtraEdgeStoreDB
             if (!optionsBuilder.IsConfigured)
             {
 //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=DESKTOP-9411J58\\SQLEXPRESS;Database=ExtraEdgeStoreDB;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=SILICUS543\\SQLEXPRESS2017;Database=ExtraEdgeStoreDB;Trusted_Connection=True;");
                 //"Server=SILICUS543\\SQLEXPRESS2017;Database=ExtraEdgeStoreDB;Trusted_Connection=True;");
+                //"Server=DESKTOP-9411J58\\SQLEXPRESS;Database=ExtraEdgeStoreDB;Trusted_Connection=True;
             }
         }
 

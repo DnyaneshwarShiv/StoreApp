@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using StoreApp.Business.services;
 using StoreApp.Controllers;
 using StoreApp.Domain.ClientDB;
 using StoreApp.Domain.ExtraEdgeStoreDB;
+using StoreApp.DTO;
 using StoreApp.Repository.Reposiories;
 using System;
 using System.Text.Encodings.Web;
@@ -20,127 +22,67 @@ namespace APS.UnitTest.Controller
     {
         private readonly StoreController storeController;
         private readonly Mock<StoreService> storeService;
-        private readonly Mock<StoreReposiotry> storeRepository;
+        private readonly IMapper mapperMock;
+        private readonly StoreReposiotry storeRepository;
         private readonly HtmlEncoder encode;
-        private readonly IMemoryCache memoryCache;
         private readonly DbContextOptions<ExtraEdgeStoreDBContext> dbContextOptions;
         private readonly ExtraEdgeStoreDBContext extraEdgeDB;
         private readonly ClientDBContext clientDB;
         private readonly DbContextOptions<ClientDBContext> clientDBContextOption;
+        private readonly IMemoryCache cache;
         public StoreClientControllerUnitTest()
         {
-            // logger = new Mock<ILogger<StoreClientControllerUnitTest>>().Object;
-            dbContextOptions = new DbContextOptionsBuilder<ExtraEdgeStoreDBContext>()
-            .UseInMemoryDatabase(databaseName: "ExtraEdgeStorOption")
-            .Options;
-            clientDBContextOption = new DbContextOptionsBuilder<ClientDBContext>()
-           .UseInMemoryDatabase(databaseName: "ClientDB")
-           .Options;
+            cache = new MemoryCache(new MemoryCacheOptions());
+            dbContextOptions = new DbOptionsExtraEdgeDgeFactory("ExtraEdge").ExtraEdgeStoreDBContextOption;
             extraEdgeDB = new ExtraEdgeStoreDBContext(dbContextOptions);
+            clientDBContextOption = new DbOptionsExtraEdgeDgeFactory("ClientDB").ClientDBContextOption;
             clientDB = new ClientDBContext(clientDBContextOption);
-
-            extraEdgeDB.UserMobileOrder.Add(new UserMobileOrder()
-            {
-              Id=1,
-              CreatedBy="Dnyaneshwar",
-              CreatedOn=DateTime.UtcNow,
-              IsActive=true,
-              MobileId=1,
-              OrderDate= DateTime.Parse("2019-05-12 00:00:00.000"),
-              PaymentId=1,
-              UserOrderId=1
-            });
-            clientDB.Client.Add(new Client()
-            {
-                Id = 1,
-                CreatedBy = "Dnyaneshwar",
-                CreatedOn = DateTime.UtcNow,
-                IsActive = true,
-                StoreConnectionString = "Server=DESKTOP-9411J58\\SQLEXPRESS;Database=ExtraEdgeStoreDB;Trusted_Connection=True;",
-                StoreDbname = "ExtraEdge"
-            });
-            clientDB.Users.Add(new Users()
-            {
-                Id = 1,
-                CreatedBy = "Dnyaneshwar",
-                CreatedOn = DateTime.UtcNow,
-                IsActive = true,
-                Age = 27,
-                City = "Pune",
-                ClientId = 1,
-                Email = "dnyaneshwar.Shivbhakta@silicus.com",
-                Gender = "Male",
-                Mobile = "8793113432",
-                Name = "Dnyaneshwar",
-                Password = "VGVzdEAxMjM0",
-                Token = string.Empty
-            });
-            extraEdgeDB.Mobile.Add(new Mobile()
-            {
-                Id = 1,
-                CreatedBy = "Dnyaneshwar",
-                Brand = "Samsung",
-                CreatedOn = DateTime.UtcNow,
-                IsActive = true,
-                Model = "M30s",
-                Price = 16000,
-                Year = 2019
-            });
-            extraEdgeDB.PaymentModeMaster.Add(new PaymentModeMaster()
-            {
-                Id = 1,
-                CreatedBy = "Dnyaneshwar",
-                CreatedOn = DateTime.UtcNow,
-                IsActive = true,
-                PaymentType = "NetBanking"
-            });
-            extraEdgeDB.Promotion.Add(new Promotion()
-            {
-                DiscountPercentage = 50,
-                PromoCodeName = "BOGO",
-                PromoCodeType = "MONSOON",
-                Id = 1,
-                CreatedBy = "Dnyaneshwar",
-                CreatedOn = DateTime.Parse("2019-05-12 00:00:00.000")
-            });
-            extraEdgeDB.UserOrder.Add(new UserOrder()
-            {
-                OrderDate = DateTime.Parse("2019-05-12 00:00:00.000"),
-                IsActive = true,
-                OrderName = "Mobile Purchase",
-                UserId = 1,
-                Id = 1,
-                CreatedBy = "Dnyaneshwar",
-                CreatedOn = DateTime.Parse("2019-05-12 00:00:00.000")
-            });
-            extraEdgeDB.SaveChanges();
-            storeService = new Mock<StoreService>();
             encode = new Mock<HtmlEncoder>().Object;
-            storeRepository = new Mock<StoreReposiotry>(extraEdgeDB,clientDB);
-            memoryCache = Mock.Of<IMemoryCache>();
-            storeController = new StoreController(, memoryCache);
+            mapperMock = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MapProfile());
+            }).CreateMapper();
+            storeRepository = new StoreReposiotry(extraEdgeDB,clientDB);
+            storeService = new Mock<StoreService>(storeRepository,mapperMock);
+            storeController = new StoreController(storeService.Object, cache);
         }
       
         #region Test Constructor
         [TestMethod]
         public void Test_ApsClientController()
         {
-            StoreController tstController= new StoreController( memoryCache);
+            StoreController tstController= new StoreController(storeService.Object, cache);
             Assert.IsNotNull(tstController);
         }
         [TestMethod]
         public void Test_FilteredData()
         {
             string type = "Mobile";
-            memoryCache.Set("ClientId", 1);
+            using (var entry = cache.CreateEntry("ClientId"))
+            {
+                entry.Value = Convert.ToInt64(1);
+                entry.AbsoluteExpiration = DateTime.UtcNow.AddDays(1);
+            }
             var response =  storeController.GetAllFilteredOrders(type) as OkObjectResult ;
             Assert.AreEqual(200, response.StatusCode );
 
         }
-       
+        [TestMethod]
+        public void Test_UnAuthorizedFilteredData()
+        {
+            string type = "Mobile";
+            using (var entry = cache.CreateEntry("ClientId"))
+            {
+                entry.Value = null;
+                entry.AbsoluteExpiration = DateTime.UtcNow.AddDays(1);
+            }
+            var response = storeController.GetAllFilteredOrders(type) as UnauthorizedResult;
+            Assert.AreEqual(401, response.StatusCode);
+
+        }
         #endregion
     }
-    public static class Cache
+    public static class MemoryCacheService
     {
         public static TItem Set<TItem>(this IMemoryCache cache, object key, TItem value, MemoryCacheEntryOptions options)
         {
@@ -155,6 +97,26 @@ namespace APS.UnitTest.Controller
             }
 
             return value;
+        }
+        public static bool TryGetValue<TItem>(this IMemoryCache cache, object key, out TItem value)
+        {
+            object result;
+            if (cache.TryGetValue(key, out result))
+            {
+                value = (TItem)result;
+                return true;
+            }
+
+            value = default(TItem);
+            return false;
+        }
+        public static IMemoryCache GetMemoryCache(object expectedValue)
+        {
+            var mockMemoryCache = new Mock<IMemoryCache>();
+            mockMemoryCache
+                .Setup(x => x.TryGetValue(It.IsAny<object>(), out expectedValue))
+                .Returns(true);
+            return mockMemoryCache.Object;
         }
     }
   
